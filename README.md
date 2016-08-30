@@ -2,7 +2,8 @@
 
 **TODO: Add description**
 
-## Installation
+Not available in Hex yet.
+<!-- ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
 
@@ -16,5 +17,5 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
         def application do
           [applications: [:elixir_zigbee]]
-        end
+        end -->
 
