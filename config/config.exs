@@ -32,3 +32,7 @@ use Mix.Config
 config :ex_zigbee, :serial_config,
   port: System.get_env("PORT") || "/dev/ttyUSB0",
   baud: System.get_env("BAUD") || 19200
+
+config :ex_zigbee, :handlers, [
+  {0x05, {0x01, 0x04}, {0x04, 0x02}, fn params -> ExZigbee.TestModule.test_function(params) end}
+]
