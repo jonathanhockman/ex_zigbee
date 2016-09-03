@@ -20,10 +20,6 @@ defmodule ExZigbee.FrameTypes.ExplicitTx do
     checksum = <<Helpers.Frames.calculate_checksum(payload)::size(8)>>
     payload = Helpers.String.get_bitstring(payload)
 
-    full = <<0x7e>> <> length <> payload <> checksum
-
-    IO.inspect full, base: :hex
-
-    full
+    <<0x7e>> <> length <> payload <> checksum
   end
 end
