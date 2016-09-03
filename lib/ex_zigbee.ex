@@ -15,7 +15,8 @@ defmodule ExZigbee do
     opts = [strategy: :one_for_one, name: ExZigbee.Supervisor]
     {:ok, sup_pid} = Supervisor.start_link(children, opts)
 
-    ExZigbee.SerialWorker.send({0x01, {0x01, 0x04}, {0x04, 0x02}, {0x0, 0x13, 0xA2, 0x0, 0x40, 0xE6, 0x5A, 0x6D}}, ExZigbee.Helpers.String.get_codepoints("Just a test message"))
+    dest_addy = ExZigbee.Address.new(0x01, {0x01, 0x04}, {0x04, 0x02}, {0x0, 0x13, 0xA2, 0x0, 0x40, 0xE6, 0x5A, 0x6D})
+    ExZigbee.SerialWorker.send(dest_addy, ExZigbee.Helpers.String.get_codepoints("Just a test message"))
 
     {:ok, sup_pid}
   end

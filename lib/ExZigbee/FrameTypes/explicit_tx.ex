@@ -2,7 +2,7 @@ defmodule ExZigbee.FrameTypes.ExplicitTx do
 
   alias ExZigbee.Helpers
 
-  def create({endpoint, profile, cluster, address}, payload) when is_list(payload) do
+  def create(%{endpoint: endpoint, profile: profile, cluster: cluster, long_address: address}, payload) when is_list(payload) do
     payload = [0x11,
               0x00,
               Tuple.to_list(address), 
