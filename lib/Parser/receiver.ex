@@ -17,8 +17,10 @@ defmodule ExZigbee.Parser.Receiver do
           case Enum.count(rest) do
             ^length ->
               frame =
-                unless not _verify_checksum(rest, byte) do
-                  _parse_frame(data)  
+                if _verify_checksum(rest, byte) do
+                  _parse_frame(data)
+                else
+                  {:error, "Checksum failed"}
                 end
 
               {:complete, frame}
@@ -38,11 +40,10 @@ defmodule ExZigbee.Parser.Receiver do
 
   defp _parse_frame([_header, _lfirst, _lsecond, frame_type | frame_data]) do
     case frame_type do
-      0x91 -> ExplicitRx.parse(frame_data)
+      0x91 -> {ExZigbee.Transport.explicit, ExplicitRx.parse(frame_data)}
       _ -> 
-        IO.puts "Unsupported frame type: "
-        IO.inspect frame_type, base: :hex
-        IO.inspect frame_data, base: :hex
+        string_type = Base.encode16(<<frame_type>>)
+        {:error, "Unsupported frame type: 0x#{string_type}"}
     end
   end
 

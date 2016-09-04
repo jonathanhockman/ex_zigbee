@@ -13,9 +13,7 @@ defmodule ExZigbee.Mixfile do
   # Configuration for the OTP application
   #
   # Type "mix help compile.app" for more information
-  def application do
-    [mod: {ExZigbee, []}, applications: [:logger]]
-  end
+  def application, do: []
 
   # Dependencies can be Hex packages:
   #
@@ -27,7 +25,6 @@ defmodule ExZigbee.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:serial, "~> 0.1.2"},
-     {:quantum, ">= 1.7.1"}]
+    [{:serial, "~> 0.1.2"}]
   end
 end
