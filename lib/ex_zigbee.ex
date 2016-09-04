@@ -1,12 +1,13 @@
-defmodule ExZigbee.SerialWorker do
+defmodule ExZigbee do
   use GenServer
+  
   import ExZigbee.Helpers.String
 
   alias ExZigbee.Parser
   alias ExZigbee.FrameTypes.ExplicitTx
 
   def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, :ok, [name: ExZigbeeSerialWorker])
+    GenServer.start_link(__MODULE__, :ok, [name: ExZigbeeWorker])
   end
 
   def init(:ok) do
@@ -25,7 +26,7 @@ defmodule ExZigbee.SerialWorker do
 
   # Helper functions
   def send(to_tuple, payload) do
-    GenServer.call(ExZigbeeSerialWorker, {:send, to_tuple, payload})
+    GenServer.call(ExZigbeeWorker, {:send, to_tuple, payload})
   end
 
   # Handle from helpers
