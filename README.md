@@ -60,11 +60,11 @@ is supported and is defined in ExZigbee.Transport module as `:explicit`
 
 ## Addresses
 Defined by ExZigbee.Address
- endpoint: integer
- profile: tuple,
- cluster: tuple,
- extended_address: tuple,
- short_address: tuple
+ * endpoint: integer
+ * profile: tuple,
+ * cluster: tuple,
+ * extended_address: tuple,
+ * short_address: tuple
 
 ## Sockets
 Defined by ExZigbee.Socket
