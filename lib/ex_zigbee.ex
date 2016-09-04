@@ -1,6 +1,6 @@
 defmodule ExZigbee do
   use GenServer
-  
+
   import ExZigbee.Helpers.String
 
   alias ExZigbee.Parser
@@ -25,16 +25,39 @@ defmodule ExZigbee do
   end
 
   # Helper functions
-  def send(to_tuple, payload) do
-    GenServer.call(ExZigbeeWorker, {:send, to_tuple, payload})
+  def send(socket, to, payload) do
+    GenServer.cast(ExZigbeeWorker, {:send, socket, to, payload})
+  end
+
+  def register_socket(socket) do
+    GenServer.call(ExZigbeeWorker, {:register_socket, socket})
   end
 
   # Handle from helpers
-  def handle_call({:send, to_tuple, payload}, _from, {serial, _handlers, frame} = state) do   
-    byte_string = ExplicitTx.create(to_tuple, payload)
-    response = Serial.send_data(serial, byte_string)
+  def handle_cast({:send, socket, to, payload}, {serial, _sockets, frame} = state) do
+    byte_string = ExplicitTx.create(socket, to, payload)
+    Serial.send_data(serial, byte_string)
 
-    {:reply, response, state}
+    {:noreply, state}
+  end
+
+  def handle_call({:register_socket, socket}, _from, {serial, sockets, frame}) do
+    status =
+      if socket.__struct__ == ExZigbee.Socket do
+        sockets
+        |> Enum.filter(fn s -> socket.endpoint == s.endpoint end)
+        |> case do
+          [] ->
+            sockets = [socket] ++ sockets
+            {:ok, socket}
+          _ ->
+            {:error, "You already have a socket registered for that endpoint."}
+        end
+      else
+        {:error, "Socket must be of a ExZigbee.Socket struct."}
+      end
+
+    {:reply, status, {serial, sockets, frame}}
   end
 
   # Handle data from Serial reader
@@ -46,13 +69,12 @@ defmodule ExZigbee do
         {:complete, parsed_result} ->
           case parsed_result do
             {:error, message} -> IO.puts "An error occured: #{message}" # Handle errors properly
-            {transport, frame} -> 
+            {transport, {endpoint, src_address, payload}} -> 
               sockets 
               |> Enum.filter(fn socket -> socket.transport == transport and
-                                          socket.endpoint == frame.dest_endpoint and 
-                                          socket.profile == frame.profile and 
-                                          socket.cluster == frame.cluster end)
-              |> Enum.each(fn socket -> socket.handler.(frame) end)
+                                          socket.endpoint == endpoint end)
+              |> Enum.each(fn socket -> socket.handler.({socket, src_address, payload}) 
+              end)
           end
         _ -> frame
       end

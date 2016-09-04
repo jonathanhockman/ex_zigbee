@@ -40,7 +40,10 @@ defmodule ExZigbee.Parser.Receiver do
 
   defp _parse_frame([_header, _lfirst, _lsecond, frame_type | frame_data]) do
     case frame_type do
-      0x91 -> {ExZigbee.Transport.explicit, ExplicitRx.parse(frame_data)}
+      0x91 -> 
+        parsed_frame = ExplicitRx.parse(frame_data)
+        src_address = ExZigbee.Address.new(parsed_frame.src_endpoint, parsed_frame.profile, parsed_frame.cluster, parsed_frame.src_ext_address, parsed_frame.src_short_address)
+        {ExZigbee.Transport.explicit, {parsed_frame.dest_endpoint, src_address, parsed_frame.payload}}
       _ -> 
         string_type = Base.encode16(<<frame_type>>)
         {:error, "Unsupported frame type: 0x#{string_type}"}
