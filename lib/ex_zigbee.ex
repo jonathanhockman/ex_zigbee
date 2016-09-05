@@ -33,10 +33,22 @@ defmodule ExZigbee do
     GenServer.call(ExZigbeeWorker, {:register_socket, socket})
   end
 
+  def unregister_socket(socket) do
+    GenServer.call(ExZigbeeWorker, {:register_socket, socket})
+  end
+
   # Handle from helpers
   def handle_cast({:send, socket, to, payload}, {serial, _sockets, frame} = state) do
-    byte_string = ExplicitTx.create(socket, to, payload)
-    Serial.send_data(serial, byte_string)
+    byte_string =
+      case socket.transport do
+        :explicit -> {:ok, ExplicitTx.create(socket, to, payload)}
+        transport -> {:error, "Unknown transport '#{transport}'."}
+      end
+    
+    case byte_string do
+      {:ok, payload} -> Serial.send_data(serial, payload)
+      {:error, message} -> IO.puts message
+    end
 
     {:noreply, state}
   end
@@ -58,6 +70,12 @@ defmodule ExZigbee do
       end
 
     {:reply, status, {serial, sockets, frame}}
+  end
+
+  def handle_call({:unregister_socket, socket}, _from, {serial, sockets, frame}) do
+    sockets = sockets |> Enum.filter(fn s -> s.endpoint != socket.endpoint end)
+
+    {:reply, {:ok}, {serial, sockets, frame}}
   end
 
   # Handle data from Serial reader
