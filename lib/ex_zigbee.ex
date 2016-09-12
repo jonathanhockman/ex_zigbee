@@ -56,15 +56,8 @@ defmodule ExZigbee do
   def handle_call({:register_socket, socket}, _from, {serial, sockets, frame}) do
     status =
       if socket.__struct__ == ExZigbee.Socket do
-        sockets
-        |> Enum.filter(fn s -> socket.endpoint == s.endpoint end)
-        |> case do
-          [] ->
-            sockets = [socket] ++ sockets
-            {:ok, socket}
-          _ ->
-            {:error, "You already have a socket registered for that endpoint."}
-        end
+        sockets = [socket] ++ sockets
+        {:ok, socket}
       else
         {:error, "Socket must be of a ExZigbee.Socket struct."}
       end
@@ -89,8 +82,11 @@ defmodule ExZigbee do
             {:error, message} -> IO.puts "An error occured: #{message}" # Handle errors properly
             {transport, {endpoint, src_address, payload}} -> 
               sockets 
-              |> Enum.filter(fn socket -> socket.transport == transport and
-                                          socket.endpoint == endpoint end)
+              |> Enum.filter(fn socket -> (socket.transport == transport and socket.endpoint == endpoint) and
+                                          (socket.profile == nil or socket.profile == src_address.profile) and
+                                          (socket.cluster == nil or socket.cluster == src_address.cluster) and
+                                          (socket.extended_address == nil or socket.extended_address == src_address.extended_address) and
+                                          (socket.short_address == nil or socket.short_address == src_address.short_address) end)
               |> Enum.each(fn socket -> socket.handler.({socket, src_address, payload}) 
               end)
           end
